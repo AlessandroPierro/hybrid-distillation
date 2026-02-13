@@ -6,4 +6,4 @@ peft
 evaluate
 omegaconf
 deepspeed==0.15.4
-flash-linear-attention
+flash-linear-attention==0.4.0

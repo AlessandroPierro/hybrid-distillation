@@ -10,14 +10,15 @@ It also includes a reimplementation of **RADLADS: Rapid Attention Distillation t
 ## Environment Setup
 
 ```bash
-git clone git@github.com:fla-org/hybrid-distillation.git
+git clone git@github.com:AlessandroPierro/hybrid-distillation.git
 cd hybrid-distillation
 
-conda create -n your_env_name python=3.12
-conda activate your_env_name
+uv venv --python 3.12
+source .venv/bin/activate
 
-pip install -r requirements.txt
-pip install flash-attn==2.7.4.post1 --no-build-isolation
+uv pip install -r requirements.txt
+uv pip install flash-attn==2.7.4.post1 --no-build-isolation
+uv pip install wandb
 ```
 
 Set your enviromental variable:

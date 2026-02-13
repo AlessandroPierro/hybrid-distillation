@@ -23,7 +23,7 @@ import gc
 from safetensors.torch import load_file
 
 local_rank = int(os.environ.get("LOCAL_RANK", 0))
-os.environ["TRITON_CACHE_DIR"] = f"triton_cache/{local_rank}"
+os.environ["TRITON_CACHE_DIR"] = f"/tmp/triton_cache/{local_rank}"
 
 def get_logger(name: str = None) -> logging.Logger:
     formatter = logging.Formatter(
