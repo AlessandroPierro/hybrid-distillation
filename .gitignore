@@ -45,3 +45,4 @@ __pycache__
 # macOS
 .DS_Store
 
+converted/

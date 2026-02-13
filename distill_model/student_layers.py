@@ -70,9 +70,10 @@ class PaTHFoXAttentionStudentV1(PaTHAttention):
 from fla.layers.gated_deltanet import GatedDeltaNet
 class GatedDeltaNetStudentV1(GatedDeltaNet):
     def __init__(self, config, layer_idx: int):
+        _head_dim = getattr(config, 'head_dim', None) or config.hidden_size // config.num_heads
         super().__init__(hidden_size=config.hidden_size,
                          expand_v=1,
-                         head_dim=config.hidden_size // config.num_heads,
+                         head_dim=_head_dim,
                          use_gate=False,
                          use_short_conv=True,
                          num_heads=config.num_heads,
@@ -96,9 +97,10 @@ class GatedDeltaNetStudentV1(GatedDeltaNet):
 from fla.layers.gated_deltanet import GatedDeltaNet
 class GatedDeltaNetStudentV2(GatedDeltaNet):
     def __init__(self, config, layer_idx: int):
+        _head_dim = getattr(config, 'head_dim', None) or config.hidden_size // config.num_heads
         super().__init__(hidden_size=config.hidden_size,
                          expand_v=1,
-                         head_dim=config.hidden_size // config.num_heads,
+                         head_dim=_head_dim,
                          use_gate=False,
                          use_short_conv=False,
                          num_heads=config.num_heads,
@@ -123,9 +125,10 @@ class GatedDeltaNetStudentV2(GatedDeltaNet):
 
 class GatedDeltaNetStudentV3(GatedDeltaNet):
     def __init__(self, config, layer_idx: int):
+        _head_dim = getattr(config, 'head_dim', None) or config.hidden_size // config.num_heads
         super().__init__(hidden_size=config.hidden_size,
                          expand_v=1,
-                         head_dim=config.hidden_size // config.num_heads,
+                         head_dim=_head_dim,
                          use_short_conv=True,
                          num_heads=config.num_heads,
                          layer_idx=layer_idx,
@@ -151,9 +154,10 @@ class GatedDeltaNetStudentV3(GatedDeltaNet):
 
 class GatedDeltaNetStudentV4(GatedDeltaNet):
     def __init__(self, config, layer_idx: int):
+        _head_dim = getattr(config, 'head_dim', None) or config.hidden_size // config.num_heads
         super().__init__(hidden_size=config.hidden_size,
                          expand_v=1,
-                         head_dim=config.hidden_size // config.num_heads,
+                         head_dim=_head_dim,
                          use_short_conv=False,
                          num_heads=config.num_heads,
                          layer_idx=layer_idx,
@@ -180,9 +184,10 @@ class GatedDeltaNetStudentV4(GatedDeltaNet):
 from distill_model.custom_gdn import GatedDeltaNet_custom
 class GatedDeltaNetStudentV6(GatedDeltaNet_custom):
     def __init__(self, config, layer_idx: int):
+        _head_dim = getattr(config, 'head_dim', None) or config.hidden_size // config.num_heads
         super().__init__(hidden_size=config.hidden_size,
                          expand_v=1,
-                         head_dim=config.hidden_size // config.num_heads,
+                         head_dim=_head_dim,
                          num_heads=config.num_heads,
                          layer_idx=layer_idx,
                          )
@@ -207,9 +212,10 @@ class GatedDeltaNetStudentV6(GatedDeltaNet_custom):
 
 class GatedDeltaNetStudentV5(GatedDeltaNet):
     def __init__(self, config, layer_idx: int):
+        _head_dim = getattr(config, 'head_dim', None) or config.hidden_size // config.num_heads
         super().__init__(hidden_size=config.hidden_size,
                          expand_v=1,
-                         head_dim=config.hidden_size // config.num_heads,
+                         head_dim=_head_dim,
                          use_short_conv=False,
                          num_heads=config.num_heads,
                          layer_idx=layer_idx,
@@ -300,10 +306,12 @@ class SlidingWindowAttentionStudentV1(nn.Module):
     def __init__(self, config, layer_idx: int):
         super().__init__()
         self.layer_idx = layer_idx
+        _head_dim = getattr(config, 'head_dim', None)
         self.attn = Attention(
             hidden_size=config.hidden_size,
             num_heads=config.num_heads,
             num_kv_heads=config.num_kv_heads,
+            head_dim=_head_dim,
             qkv_bias=config.qkv_bias,
             qk_norm=config.qk_norm,
             window_size=config.window_size,  # <- sliding window

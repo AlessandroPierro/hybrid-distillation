@@ -16,6 +16,7 @@ class StudentConfig(PretrainedConfig):
         num_hidden_layers: int = 24,
         num_heads: int = 32,
         num_kv_heads: Optional[int] = None,
+        head_dim: Optional[int] = None,
         qkv_bias: bool = False,
         qk_norm: bool = False,
         window_size: Optional[int] = None,
@@ -47,6 +48,7 @@ class StudentConfig(PretrainedConfig):
         self.num_hidden_layers = num_hidden_layers
         self.num_heads = num_heads
         self.num_kv_heads = num_kv_heads
+        self.head_dim = head_dim
         self.use_zero3 = use_zero3 
         self.qkv_bias = qkv_bias
         self.qk_norm = qk_norm

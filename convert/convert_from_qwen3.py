@@ -36,6 +36,31 @@ from accelerate import init_empty_weights
 from fla.models.transformer.configuration_transformer import TransformerConfig
 
 config_dict = {
+    "0.6b": {
+        "attention_bias": False,
+        "bos_token_id": 151643,
+        "eos_token_id": 151645,
+        "fuse_cross_entropy": False,
+        "fuse_norm": True,
+        "hidden_act": "swish",
+        "hidden_ratio": None,
+        "hidden_size": 1024,
+        "initializer_range": 0.02,
+        "intermediate_size": 3072,
+        "model_type": "transformer",
+        "norm_eps": 1e-06,
+        "num_heads": 16,
+        "num_hidden_layers": 28,
+        "num_kv_heads": 8,
+        "head_dim": 128,
+        "rope_theta": 1000000.0,
+        "tie_word_embeddings": True,
+        "use_cache": True,
+        "vocab_size": 151936,
+        "max_position_embeddings": 40960,
+        'qkv_bias': False,
+        'qk_norm': True
+    },
     "8b": {
         "attention_bias": False,
         "bos_token_id": 151643,
@@ -216,9 +241,9 @@ def convert(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", default='Qwen/Qwen3-8B')
-    parser.add_argument("--config", default='8b')
-    parser.add_argument("--output", default='converted/Qwen3-8B')
+    parser.add_argument("--model", default='Qwen/Qwen3-0.6B')
+    parser.add_argument("--config", default='0.6b')
+    parser.add_argument("--output", default='converted/Qwen3-0.6B')
     parser.add_argument('--precision', type=str, default='bfloat16')
     args = parser.parse_args()
     convert(args.model, args.config, args.output, precision=args.precision)

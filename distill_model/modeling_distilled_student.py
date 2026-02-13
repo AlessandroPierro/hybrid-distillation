@@ -132,11 +132,13 @@ class StudentBlock(nn.Module):
         self.layer_idx = layer_idx
 
         self.attn_norm = (RMSNorm if config.fuse_norm else nn.RMSNorm)(config.hidden_size, eps=config.norm_eps)
+        _head_dim = getattr(config, 'head_dim', None)
         if getattr(config, "force_window_on_all_layers", False):
             self.attn = Attention(
                 hidden_size=config.hidden_size,
                 num_heads=config.num_heads,
                 num_kv_heads=config.num_kv_heads,
+                head_dim=_head_dim,
                 qkv_bias=config.qkv_bias,
                 qk_norm=config.qk_norm,
                 window_size=config.window_size,
@@ -149,6 +151,7 @@ class StudentBlock(nn.Module):
                 hidden_size=config.hidden_size,
                 num_heads=config.num_heads,
                 num_kv_heads=config.num_kv_heads,
+                head_dim=_head_dim,
                 qkv_bias=config.qkv_bias,
                 qk_norm=config.qk_norm,
                 window_size=config.window_size,
