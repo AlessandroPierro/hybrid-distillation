@@ -1,0 +1,27 @@
+data:
+  cache_dir: '/export/work/apierro/data_cache/chunked_context4096'
+
+teacher_model:
+  name: 'converted/Qwen3-0.6B'
+
+student_model:
+  name: 'hgrn_v1'
+  keep_full_attention_layers: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]
+
+train:
+  target_tokens: 600_000_000
+  batch_size: 32
+  micro_batch_size: 8
+  train_seq_len: 4096
+  lr_scheduler_type: constant
+  lr: 0.000007 # all but attention layers
+  lr_attn: 0.0001 # attention layers
+  max_grad_norm: 1.0
+  output_dir: '/export/work/apierro/checkpoints/qwen3_0_6b_hgrn_v1_hybrid_1_0_uniform/stage2'
+  student_init_ckpt: '/export/work/apierro/checkpoints/qwen3_0_6b_hgrn_v1_hybrid_1_0_uniform/stage1/converted-hf'
+  max_length: 4096
+  # tokenizer
+  add_eos_token: False
+  resume_from_checkpoint: None
+
+stage: 2

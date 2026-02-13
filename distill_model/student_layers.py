@@ -339,3 +339,49 @@ class SlidingWindowAttentionStudentV1(nn.Module):
             if getattr(self.attn, name).bias is not None and getattr(teacher_attn, name).bias is not None:
                 getattr(self.attn, name).bias.copy_(getattr(teacher_attn, name).bias)
 
+
+from fla.layers.hgrn import HGRNAttention
+class HGRNAttentionStudentV1(HGRNAttention):
+    """
+    HGRN student with expand_ratio=1 (all projections are hidden_size → hidden_size).
+
+    Teacher → HGRN weight mapping:
+        v_proj  → i_proj  (input / what to store)
+        k_proj  → f_proj  (forget gate / what to retain)
+        q_proj  → g_proj  (output gate / what to read out) — truncated if dims differ
+        o_proj  → o_proj  (output projection)               — truncated if dims differ
+    """
+    def __init__(self, config, layer_idx: int):
+        super().__init__(
+            hidden_size=config.hidden_size,
+            expand_ratio=1,
+            use_short_conv=False,
+            layer_idx=layer_idx,
+        )
+
+    @torch.no_grad()
+    def init_from_teacher(self, teacher_attn):
+        # Handle GQA: repeat K/V heads to match num_heads
+        k_weight = teacher_attn.k_proj.weight.data
+        v_weight = teacher_attn.v_proj.weight.data
+        gqa_ratio = teacher_attn.num_heads // teacher_attn.num_kv_heads
+        if gqa_ratio > 1:
+            k_weight = repeat(k_weight, 'h d -> (h g) d', g=gqa_ratio)
+            v_weight = repeat(v_weight, 'h d -> (h g) d', g=gqa_ratio)
+
+        # v_proj → i_proj  (both [hidden_size, hidden_size] after GQA expansion)
+        self.i_proj.weight.data.copy_(v_weight[:self.input_dim])
+
+        # k_proj → f_proj
+        self.f_proj.weight.data.copy_(k_weight[:self.input_dim])
+
+        # q_proj → g_proj  (teacher Q may be larger: [num_heads*head_dim, hidden_size])
+        q_weight = teacher_attn.q_proj.weight.data
+        self.g_proj.weight.data.copy_(q_weight[:self.input_dim])
+
+        # o_proj → o_proj  (teacher O may be [hidden_size, num_heads*head_dim])
+        o_weight = teacher_attn.o_proj.weight.data
+        self.o_proj.weight.data.copy_(o_weight[:, :self.input_dim])
+
+        logger.info(f"✅ HGRN V1 layer {self.layer_idx} init from teacher done.")
+

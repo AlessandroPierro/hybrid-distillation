@@ -53,6 +53,7 @@ def get_student_attention_class(model_name: str):
         'gdn_v5': 'distill_model.student_layers.GatedDeltaNetStudentV5',
         'gdn_v6': 'distill_model.student_layers.GatedDeltaNetStudentV6',
         'swa_v1': 'distill_model.student_layers.SlidingWindowAttentionStudentV1',
+        'hgrn_v1': 'distill_model.student_layers.HGRNAttentionStudentV1',
         # Add other attention layers for future models here
         # "new_model_attention_type": "path.to.new.AttentionStudent"
     }
