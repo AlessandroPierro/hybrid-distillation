@@ -3,7 +3,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=40
-#SBATCH --gres=gpu:4
+#SBATCH --gres=gpu:8
 #SBATCH --mem=128G
 #SBATCH --time=48:00:00
 #SBATCH --partition=g95
@@ -14,7 +14,7 @@
 mkdir -p logs
 
 source .venv/bin/activate
-
+wandb disabled
 export TRITON_CACHE_DIR="/tmp/triton_cache"
 echo "TRITON_CACHE_DIR=$TRITON_CACHE_DIR" > .deepspeed_env
 
