@@ -42,6 +42,7 @@ class StudentConfig(PretrainedConfig):
         keep_full_attention_layers: List[int] = [],
         use_zero3: bool = False,
         force_window_on_all_layers: bool = False,
+        target_sparsity: float = 0.0,
         **kwargs,
     ):
         self.hidden_size = hidden_size
@@ -74,6 +75,7 @@ class StudentConfig(PretrainedConfig):
         self.student_name = student_name
         self.keep_full_attention_layers = keep_full_attention_layers
         self.force_window_on_all_layers = force_window_on_all_layers
+        self.target_sparsity = target_sparsity
 
         super().__init__(
             pad_token_id=pad_token_id,
