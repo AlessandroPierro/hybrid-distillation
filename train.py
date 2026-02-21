@@ -179,7 +179,11 @@ def build_student_for_stage2_and_3(cfg):
     target_keep_layers = cfg.student_model.get('keep_full_attention_layers', [])
     student_config.keep_full_attention_layers = list(target_keep_layers)
     student_config.fuse_swiglu = False # to be compatible with DeepSpeed's Zero-3
+    target_sparsity = float(cfg.student_model.get('target_sparsity', 0.0))
+    student_config.target_sparsity = target_sparsity
     logger.info(f"✅ Building Stage 2/3 as HYBRID with keep_layers: {target_keep_layers}")
+    if target_sparsity > 0:
+        logger.info(f"✅ Weight sparsity enabled: {target_sparsity:.1%}")
 
     # Build the new hybrid model structure (e.g., with empty weights)
     with init_empty_weights():
@@ -252,8 +256,15 @@ def build_student_for_stage2_and_3(cfg):
     del teacher_sd
 
     combined_weights_to_load = student_weights_to_load | teacher_weights_to_load
-    
-    student_model.load_state_dict(combined_weights_to_load)
+
+    # When sparsity is enabled the model contains SparseLinear layers with
+    # weight_mask buffers that won't exist in a dense checkpoint, so we must
+    # use strict=False.  The masks are computed below from the loaded weights.
+    student_model.load_state_dict(combined_weights_to_load, strict=(target_sparsity <= 0))
+
+    if target_sparsity > 0:
+        student_model.model.compute_sparsity_masks()
+        logger.info("✅ Sparsity masks computed from loaded weights")
 
     for name, p in student_model.named_parameters():
         p.requires_grad = True

@@ -341,6 +341,8 @@ class SlidingWindowAttentionStudentV1(nn.Module):
 
 
 from fla.layers.hgrn import HGRNAttention
+from distill_model.sparse_linear import SparseLinear
+
 class HGRNAttentionStudentV1(HGRNAttention):
     """
     HGRN student with expand_ratio=1 (all projections are hidden_size → hidden_size).
@@ -350,6 +352,11 @@ class HGRNAttentionStudentV1(HGRNAttention):
         k_proj  → f_proj  (forget gate / what to retain)
         q_proj  → g_proj  (output gate / what to read out) — truncated if dims differ
         o_proj  → o_proj  (output projection)               — truncated if dims differ
+
+    When ``config.target_sparsity > 0`` the four linear projections are
+    replaced with :class:`SparseLinear` layers.  Sparsity masks are computed
+    after weights are loaded (via ``init_from_teacher`` or
+    ``compute_sparsity_masks``).
     """
     def __init__(self, config, layer_idx: int):
         super().__init__(
@@ -358,6 +365,24 @@ class HGRNAttentionStudentV1(HGRNAttention):
             use_short_conv=False,
             layer_idx=layer_idx,
         )
+
+        self.target_sparsity = getattr(config, 'target_sparsity', 0.0)
+        if self.target_sparsity > 0:
+            self.i_proj = SparseLinear(config.hidden_size, self.input_dim, bias=False,
+                                       target_sparsity=self.target_sparsity)
+            self.f_proj = SparseLinear(config.hidden_size, self.input_dim, bias=False,
+                                       target_sparsity=self.target_sparsity)
+            self.g_proj = SparseLinear(config.hidden_size, self.input_dim, bias=False,
+                                       target_sparsity=self.target_sparsity)
+            self.o_proj = SparseLinear(self.input_dim, config.hidden_size, bias=False,
+                                       target_sparsity=self.target_sparsity)
+
+    def compute_sparsity_masks(self):
+        """Recompute masks on all SparseLinear projections from current weights."""
+        for name in ('i_proj', 'f_proj', 'g_proj', 'o_proj'):
+            proj = getattr(self, name)
+            if isinstance(proj, SparseLinear):
+                proj.compute_mask()
 
     @torch.no_grad()
     def init_from_teacher(self, teacher_attn):
@@ -382,6 +407,9 @@ class HGRNAttentionStudentV1(HGRNAttention):
         # o_proj → o_proj  (teacher O may be [hidden_size, num_heads*head_dim])
         o_weight = teacher_attn.o_proj.weight.data
         self.o_proj.weight.data.copy_(o_weight[:, :self.input_dim])
+
+        if self.target_sparsity > 0:
+            self.compute_sparsity_masks()
 
         logger.info(f"✅ HGRN V1 layer {self.layer_idx} init from teacher done.")
 

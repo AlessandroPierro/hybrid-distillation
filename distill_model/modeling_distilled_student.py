@@ -18,6 +18,7 @@ from fla.modules.fused_kl_div import fused_kl_div_loss
 if torch.cuda.is_available():  # strange workaround for FLA's import
     from fla.layers.attn import Attention
     from distill_model.config_distilled_student import StudentConfig
+    from distill_model.sparse_linear import SparseLinear
     from fla.models.utils import Cache
     from fla.modules import FusedCrossEntropyLoss, FusedLinearCrossEntropyLoss
     from fla.modules import RMSNorm
@@ -286,6 +287,18 @@ class StudentModel(StudentPreTrainedModel):
 
     def set_input_embeddings(self, value):
         self.embeddings = value
+
+    @torch.no_grad()
+    def compute_sparsity_masks(self):
+        """Recompute sparsity masks on all SparseLinear modules from current weights.
+
+        Call this after loading a dense checkpoint into a model that was built
+        with ``target_sparsity > 0``.  The method is a no-op when the model
+        contains no SparseLinear layers.
+        """
+        for module in self.modules():
+            if isinstance(module, SparseLinear):
+                module.compute_mask()
 
     def forward(
         self,
